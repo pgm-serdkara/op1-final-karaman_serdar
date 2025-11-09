@@ -1,4 +1,4 @@
-// File: C:\Users\serda\OneDrive\Documenten\School\2de-jaar\pgm-5\next-project-prisma\my-app\src\app\layout.tsx
+// File: C:\Users\serda\Code\pgm-5\op1-final-karaman_serdar\src\app\layout.tsx
 import * as entry from '../../../src/app/layout.js'
 import type { ResolvingMetadata, ResolvingViewport } from 'next/dist/lib/metadata/types/metadata-interface.js'
 

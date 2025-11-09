@@ -1,5 +1,5 @@
-// This is your Prisma schema file,
-// learn more about it in the docs: https://pris.ly/d/prisma-schema
+// Dit is je Prisma-schema
+// Meer info: https://pris.ly/d/prisma-schema
 
 generator client {
   provider = "prisma-client-js"
@@ -9,4 +9,94 @@ generator client {
 datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
+}
+
+// Boekmodel voor /books (paginatie, zoek, filters)
+model Book {
+  id            Int      @id @default(autoincrement())
+  title         String
+  description   String?
+  numberOfPages Int?
+  publishedYear Int?
+  genre         String?
+  author        String?
+  publisher     String?
+  coverImageUrl String?
+  ratings       Rating[]
+  wishlistItems WishlistItem[]
+  loans         Loan[]
+  
+  @@index([title])
+  @@index([author])
+  @@index([genre])
+}
+
+// User-model voor prisma.user
+model User {
+  id             String @id @default(cuid())
+  email          String @unique
+  name           String?
+  hashedPassword String?
+  role           Role   @default(USER)
+  ratings        Rating[]
+  wishlistItems  WishlistItem[]
+  loans          Loan[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Rating van gebruiker voor boek (1..5)
+model Rating {
+  id        Int      @id @default(autoincrement())
+  value     Int
+  createdAt DateTime @default(now())
+
+  // Relaties
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  bookId Int
+  book   Book   @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([bookId])
+}
+
+// Koppelmodel voor verlanglijsten
+model WishlistItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  // Relaties
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  bookId Int
+  book   Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
+}
+
+// Eenvoudig leenmodel voor uitgeleende boeken
+model Loan {
+  id         Int       @id @default(autoincrement())
+  borrowedAt DateTime  @default(now())
+  dueDate    DateTime?
+  returnedAt DateTime?
+  renewed    Boolean   @default(false)
+
+  // Relaties
+  userId String
+  user   User @relation(fields: [userId], references: [id])
+
+  bookId Int
+  book   Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId])
+  @@index([bookId])
 }

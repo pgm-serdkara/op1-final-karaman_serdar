@@ -10,3 +10,95 @@ datasource db {
   provider = "sqlite"
   url      = env("DATABASE_URL")
 }
+
+// Added Book model for /books route (paginated, searchable, filterable)
+model Book {
+  id            Int            @id @default(autoincrement())
+  title         String
+  description   String?
+  numberOfPages Int?
+  publishedYear Int?
+  genre         String?
+  author        String?
+  publisher     String?
+  coverImageUrl String?
+  ratings       Rating[]
+  wishlistItems WishlistItem[]
+  loans         Loan[]
+
+  @@index([title])
+  @@index([author])
+  @@index([genre])
+}
+
+// Added User model to fix prisma.user usage
+model User {
+  id             String         @id @default(cuid())
+  email          String         @unique
+  name           String?
+  hashedPassword String?
+  role           Role           @default(USER)
+  ratings        Rating[]
+  wishlistItems  WishlistItem[]
+  loans          Loan[]
+}
+
+enum Role {
+  USER
+  ADMIN
+}
+
+// Post model removed (not used in the app)
+
+// Rating given by a user to a book (1..5)
+model Rating {
+  id        Int      @id @default(autoincrement())
+  value     Int
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  bookId Int
+  book   Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([bookId])
+}
+
+// Many-to-many (through) model for user wishlists
+model WishlistItem {
+  id        Int      @id @default(autoincrement())
+  createdAt DateTime @default(now())
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  bookId Int
+  book   Book @relation(fields: [bookId], references: [id])
+
+  @@unique([userId, bookId])
+  @@index([userId])
+  @@index([bookId])
+}
+
+// Basic loan model to track borrowed books
+model Loan {
+  id         Int       @id @default(autoincrement())
+  borrowedAt DateTime  @default(now())
+  dueDate    DateTime?
+  returnedAt DateTime?
+  renewed    Boolean   @default(false)
+
+  // Relations
+  userId String
+  user   User   @relation(fields: [userId], references: [id])
+
+  bookId Int
+  book   Book @relation(fields: [bookId], references: [id])
+
+  @@index([userId])
+  @@index([bookId])
+}

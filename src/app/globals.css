@@ -3,12 +3,19 @@
 :root {
   --background: #ffffff;
   --foreground: #171717;
+  /* Lettertypevariabelen van next/font in layout */
+  --font-heading: var(--font-source-sans-3);
+  --font-body: var(--font-open-sans);
+  /* Linkkleur gebruikt Theme-accent (zelfde als standaardknop) */
+  --link: #0090ff;
+  --link-hover: #33b5ff; /* lichtere blauwe hover */
 }
 
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
-  --font-sans: var(--font-geist-sans);
+  /* Koppel Tailwind font-sans aan body-lettertype */
+  --font-sans: var(--font-body);
   --font-mono: var(--font-geist-mono);
 }
 
@@ -16,11 +23,125 @@
   :root {
     --background: #0a0a0a;
     --foreground: #ededed;
+    /* Accenttokens behouden zodat dark mode gelijk blijft */
+    --link: #0090ff;
+    --link-hover: #33b5ff; /* lichtere blauwe hover */
   }
 }
 
 body {
   background: var(--background);
   color: var(--foreground);
-  font-family: Arial, Helvetica, sans-serif;
+  font-family: var(--font-body, system-ui, sans-serif);
+  font-optical-sizing: auto;
+  text-rendering: optimizeLegibility;
+  /* Reserveer altijd ruimte voor verticale scrollbar zodat container/tabel niet verspringt
+    wanneer pageSize toeneemt en er een scrollbar verschijnt (Windows: ~17px). */
+  scrollbar-gutter: stable both-edges;
+  overflow-y: scroll; /* zorgt voor marge, ook bij korte content */
+}
+
+/* Voorkom layoutshift bij kortere content (scrollbar wissel)
+  Reserveer marge zodat kolommen en headers stabiel blijven bij paginawijzigingen */
+html {
+  scrollbar-gutter: stable both-edges;
+}
+
+/* Gebruik tabulaire cijfers om kolombreedtes stabiel te houden */
+.tabular-nums { font-variant-numeric: tabular-nums; }
+
+h1, h2, h3, h4, h5, h6 {
+  font-family: var(--font-heading, var(--font-body));
+  font-weight: 600;
+  line-height: 1.15;
+}
+
+button, .btn, [type="button"], [type="submit"], [role="button"] {
+  font-family: var(--font-heading, var(--font-body));
+  font-weight: 600;
+}
+
+/* Zorg voor handcursor bij interactieve knoppen */
+button,
+button[type="button"],
+button[type="submit"],
+[role="button"],
+.btn,
+button:where(:not([disabled])) {
+  cursor: pointer;
+}
+
+button[disabled],
+button[aria-disabled="true"],
+.btn[disabled] {
+  cursor: not-allowed;
+}
+
+/* Handcursor voor interactieve links */
+a[href],
+a[role="button"],
+.btn a,
+button a,
+a.btn,
+a:where(:not([aria-disabled="true"])) {
+  cursor: pointer;
+}
+
+/* Gedeactiveerde links (bij aria-disabled) */
+a[aria-disabled="true"],
+a[disabled] {
+  cursor: not-allowed;
+  pointer-events: none;
+  opacity: 0.6;
+}
+
+/* Algemene linkstijl: geen underline bij hover, wel andere kleur */
+a {
+  color: var(--link);
+  text-decoration: none;
+}
+
+a:hover {
+  text-decoration: none;
+  color: var(--link-hover);
+}
+
+/* Standaard content centreren (routes kunnen afwijken via template.tsx) */
+.page-container {
+  max-width: 1024px;
+  margin-inline: auto;
+  padding-inline: 1rem;
+  padding-block: 1rem;
+}
+
+/* Skeleton-glans */
+.skeleton {
+  position: relative;
+  overflow: hidden;
+}
+
+.skeleton::after {
+  content: "";
+  position: absolute;
+  inset: 0 auto 0 -150%;
+  width: 150%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.35), transparent);
+  animation: skeleton-shimmer 0.8s ease-in-out infinite;
+}
+
+@media (prefers-color-scheme: dark) {
+  .skeleton::after {
+    background: linear-gradient(90deg, transparent, rgba(255,255,255,0.18), transparent);
+  }
+}
+
+@keyframes skeleton-shimmer {
+  0% { transform: translateX(0); }
+  100% { transform: translateX(100%); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .skeleton::after {
+    animation: none;
+  }
 }

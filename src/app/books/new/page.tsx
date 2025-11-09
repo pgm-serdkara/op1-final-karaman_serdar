@@ -2,7 +2,7 @@ import prisma from "@/lib/client";
 import { redirect } from "next/navigation";
 import type { Metadata } from "next";
 import BookNewForm from "@/components/BookNewForm";
-import { writeFile } from "fs/promises";
+import { mkdir, writeFile } from "fs/promises";
 import path from "path";
 
 export const metadata: Metadata = {
@@ -26,10 +26,10 @@ async function createBook(formData: FormData) {
     const buffer = Buffer.from(await coverImageFile.arrayBuffer());
     const filename = `${Date.now()}-${coverImageFile.name.replace(/\s/g, "_")}`;
     try {
-      await writeFile(
-        path.join(process.cwd(), "public/img/covers", filename),
-        buffer
-      );
+      const coversDir = path.join(process.cwd(), "public", "img", "covers");
+      await mkdir(coversDir, { recursive: true });
+      const targetPath = path.join(coversDir, filename);
+      await writeFile(targetPath, buffer);
       coverImageUrl = `/img/covers/${filename}`;
     } catch (error) {
       console.error("Failed to write file:", error);

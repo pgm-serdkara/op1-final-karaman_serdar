@@ -1,9 +1,26 @@
+import type { NextAuthOptions } from "next-auth";
 import NextAuth from "next-auth/next";
 import CredentialsProvider from "next-auth/providers/credentials";
-import prisma from "@/lib/client";
 import bcrypt from "bcrypt";
+import type { Role } from "@/app/_generated/prisma";
+import prisma from "@/lib/client";
 
-const authOptions = {
+type SessionUser = {
+  id: string;
+  role: Role;
+};
+
+const isSessionUser = (candidate: unknown): candidate is SessionUser =>
+  Boolean(
+    candidate &&
+      typeof candidate === "object" &&
+      "id" in candidate &&
+      typeof (candidate as { id?: unknown }).id === "string" &&
+      "role" in candidate &&
+      typeof (candidate as { role?: unknown }).role === "string"
+  );
+
+const authOptions: NextAuthOptions = {
   providers: [
     CredentialsProvider({
       name: "Credentials",
@@ -18,15 +35,29 @@ const authOptions = {
         const user = await prisma.user.findUnique({
           where: { email: credentials.email },
         });
-        if (!user) {
+        if (!user || !user.hashedPassword) {
           return null;
         }
         const passwordsMatch = await bcrypt.compare(
           credentials.password,
-          user.hashedPassword!
+          user.hashedPassword
         );
 
-        return passwordsMatch ? user : null;
+        if (!passwordsMatch) {
+          return null;
+        }
+
+        const sanitizedUser: SessionUser & {
+          email: string;
+          name: string | null;
+        } = {
+          id: user.id,
+          email: user.email,
+          name: user.name ?? null,
+          role: user.role,
+        };
+
+        return sanitizedUser;
       },
     }),
   ],
@@ -35,36 +66,38 @@ const authOptions = {
   },
   callbacks: {
     // Voegt userId toe aan de sessie zodat client (useSession) en server (getServerSession) hem zien
-    session: async ({ session }: { session: { user?: { email?: string; id?: string }; role?: string } }) => {
+    session: async ({ session }) => {
+        if (!session.user?.email) {
+          return session;
+        }
+
         const user = await prisma.user.findUnique({
-          where: { email: session?.user?.email ?? undefined },
+          where: { email: session.user.email },
           select: { id: true, role: true },
         });
+
         if (user) {
           session.role = user.role;
-          // Zorg dat session.user bestaat en voeg id toe voor gemak
-          session.user = session.user || {};
-          session.user.id = user.id;
+          session.user = {
+            ...session.user,
+            id: user.id,
+          };
         }
+
         return session;
       },
     // Voegt rol toe aan het token zodat middleware die kan gebruiken
-    jwt: async ({ token, user }: { token: Record<string, unknown>; user?: Record<string, unknown> }) => {
-        if (user && typeof user === "object") {
-          const u = user as { role?: string; id?: string };
-          if (u.role) {
-            (token as { role?: string }).role = u.role;
-          }
-          if (u.id) {
-            (token as { userId?: string }).userId = u.id;
-          }
+    jwt: async ({ token, user }) => {
+        if (isSessionUser(user)) {
+          token.role = user.role;
+          token.userId = user.id;
         }
         return token;
       },
     },
-} as const;
+};
 
-const handler = (NextAuth as any)(authOptions);
+const handler = NextAuth(authOptions);
 
 export { authOptions };
 export { handler as GET, handler as POST };

@@ -4,24 +4,48 @@
     "/": {
       "files": [
         "server/edge-runtime-webpack.js",
-        "server/middleware.js"
+        "server/src/middleware.js"
       ],
-      "name": "middleware",
+      "name": "src/middleware",
       "page": "/",
       "matchers": [
         {
-          "regexp": "^/.*$",
-          "originalSource": "/:path*"
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/books(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/books/:path*"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/wishlist(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/wishlist"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/users(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/users/:path*"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/wishlist(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/api/wishlist/:path*"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/ratings(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/api/ratings/:path*"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/loans(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/api/loans/:path*"
+        },
+        {
+          "regexp": "^(?:\\/(_next\\/data\\/[^/]{1,}))?\\/api\\/books(?:\\/((?:[^\\/#\\?]+?)(?:\\/(?:[^\\/#\\?]+?))*))?(\\.json)?[\\/#\\?]?$",
+          "originalSource": "/api/books/:path*"
         }
       ],
       "wasm": [],
       "assets": [],
       "env": {
-        "__NEXT_BUILD_ID": "development",
+        "__NEXT_BUILD_ID": "28k78A1nLWxOzJ_N2Zvm4",
         "NEXT_SERVER_ACTIONS_ENCRYPTION_KEY": "nTqwO6PSbKldBYNveUlZ2U+0D9Fh8KG0DluX0v/1WSc=",
-        "__NEXT_PREVIEW_MODE_ID": "e531c875b939fa02df9e0e4c15fb5f36",
-        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "d94d1d80590ab8630825143f86371e7cff7626db8cf5bd49c30135e74369d1bb",
-        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "4ab3bdd7088889193180abc4ca001e04a280dd29983e9bcfb3d4d22171793dca"
+        "__NEXT_PREVIEW_MODE_ID": "4f02209dc4f6abcdd2f509ff21524649",
+        "__NEXT_PREVIEW_MODE_SIGNING_KEY": "c1d2c0a9cfe6e2f9622b970dc437a0b3434825aac19efe5bd04b12719de8d3d1",
+        "__NEXT_PREVIEW_MODE_ENCRYPTION_KEY": "b135a959a9b3d70fa04edf122ba1c6e86e418b482a409206bdc8fffcf8ef663c"
       }
     }
   },

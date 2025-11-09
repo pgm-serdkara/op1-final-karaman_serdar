@@ -1,25 +1,31 @@
-type AppRole = "USER" | "ADMIN";
+import type { Role } from "@prisma/client";
+import type { NextAuthOptions, DefaultSession } from "next-auth";
+import type { NextApiRequest, NextApiResponse } from "next";
+import type { NextRequest } from "next/server";
 
 declare module "next-auth" {
   interface Session {
-    user?: {
-      name?: string | null;
-      email?: string | null;
-      image?: string | null;
-    };
-    role?: AppRole;
+    user?: DefaultSession["user"] & { id?: string };
+    role?: Role;
   }
-  // Minimal declaration so we can use getServerSession in server components
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export function getServerSession(...args: any[]): Promise<Session | null>;
+
+  interface User {
+    id: string;
+    role: Role;
+  }
+
+  export function getServerSession(
+    ...args:
+      | [NextAuthOptions]
+      | [NextApiRequest, NextApiResponse, NextAuthOptions]
+  ): Promise<Session | null>;
 }
 
 declare module "next-auth/jwt" {
   interface JWT {
-    role?: AppRole;
+    role?: Role;
+    userId?: string;
   }
-  // Add a declaration for getToken to ensure TS can resolve it in middleware
-  // Runtime is provided by next-auth; this signature is sufficient for our usage
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  export function getToken(params: { req: any }): Promise<JWT | null>;
+
+  export function getToken(params: { req: NextRequest }): Promise<JWT | null>;
 }
